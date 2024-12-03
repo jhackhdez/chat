@@ -63,7 +63,7 @@ class __FormState extends State<_Form> {
       padding: const EdgeInsets.symmetric(horizontal: 50),
       child: Column(
         children: [
-          // TextField Email
+          // TextField Name
           CustomInput(
             icon: Icons.perm_identity,
             placeholder: 'Name',
