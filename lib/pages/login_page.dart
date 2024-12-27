@@ -1,8 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:chat/services/auth_service.dart';
+
+import 'package:chat/helpers/show_alert.dart';
+
 import 'package:chat/widgets/blue_btn.dart';
 import 'package:chat/widgets/custom_input.dart';
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
-import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -57,6 +63,7 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
     return Container(
       margin: const EdgeInsets.only(top: 40),
       padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -80,10 +87,24 @@ class __FormState extends State<_Form> {
           // Button
           BlueBtn(
             text: 'Ingrese',
-            onPressed: () {
-              print(emailCtrl.text);
-              print(passCtrl.text);
-            },
+            onPressed: authService.accessing
+                ? null
+                : () async {
+                    // Para eliminar el focues en donde esté y esto oculta teclado
+                    FocusScope.of(context).unfocus();
+                    // Se llama a authService
+                    final loginOK = await authService.login(
+                        emailCtrl.text.trim(), passCtrl.text.trim());
+
+                    if (loginOK) {
+                      //TODO: Navegar a otra pantalla
+                    } else {
+                      // Mostrar alerta
+                      // ignore: use_build_context_synchronously
+                      showAlert(
+                          context, 'Login incorrecto', 'Revise credenciales');
+                    }
+                  },
           )
         ],
       ),
