@@ -97,12 +97,17 @@ class __FormState extends State<_Form> {
                         emailCtrl.text.trim(), passCtrl.text.trim());
 
                     if (loginOK) {
-                      //TODO: Navegar a otra pantalla
+                      // TODO: Conectar a nuestro socket server
+                      // Navegar a otra pantalla
+                      // ignore: use_build_context_synchronously
+                      Navigator.pushReplacementNamed(context, 'users');
                     } else {
                       // Mostrar alerta
-                      // ignore: use_build_context_synchronously
                       showAlert(
-                          context, 'Login incorrecto', 'Revise credenciales');
+                          // ignore: use_build_context_synchronously
+                          context,
+                          'Login incorrecto',
+                          'Revise credenciales');
                     }
                   },
           )

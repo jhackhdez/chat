@@ -1,8 +1,14 @@
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+
+import 'package:chat/services/auth_service.dart';
+
+import 'package:chat/helpers/show_alert.dart';
+
 import 'package:chat/widgets/blue_btn.dart';
 import 'package:chat/widgets/custom_input.dart';
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
-import 'package:flutter/material.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -58,6 +64,7 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
     return Container(
       margin: const EdgeInsets.only(top: 40),
       padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -87,11 +94,25 @@ class __FormState extends State<_Form> {
 
           // Button
           BlueBtn(
-            text: 'Ingrese',
-            onPressed: () {
-              print(emailCtrl.text);
-              print(passCtrl.text);
-            },
+            text: 'Crear cuenta',
+            onPressed: authService.accessing
+                ? null
+                : () async {
+                    print(nameCtrl.text);
+                    print(emailCtrl.text);
+                    print(passCtrl.text);
+                    final registerOK = await authService.register(
+                        nameCtrl.text.trim(),
+                        emailCtrl.text.trim(),
+                        passCtrl.text.trim());
+
+                    if (registerOK == true) {
+                      // TODO: Conectar socket server
+                      Navigator.pushReplacementNamed(context, 'users');
+                    } else {
+                      showAlert(context, 'Registro Incorrecto', registerOK);
+                    }
+                  },
           )
         ],
       ),

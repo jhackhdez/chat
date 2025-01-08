@@ -11,5 +11,5 @@ final Map<String, Widget Function(BuildContext)> appRoutes = {
   'chat': (_) => const ChatPage(),
   'login': (_) => const LoginPage(),
   'register': (_) => const RegisterPage(),
-  'loading': (_) => LoadingPage()
+  'loading': (_) => const LoadingPage()
 };
