@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'package:chat/services/auth_service.dart';
-
+import 'package:chat/services/socket_service.dart';
+import 'package:chat/services/users_service.dart';
 import 'package:chat/models/user.dart';
 
 class UsersPage extends StatefulWidget {
@@ -16,17 +17,27 @@ class UsersPage extends StatefulWidget {
 class _UsersPageState extends State<UsersPage> {
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+  final usersService = UsersService();
 
-  final users = [
-    User(online: true, email: 'test1@test.com', name: 'Jorge', uid: '1'),
-    User(online: false, email: 'test2@test.com', name: 'Yoisy', uid: '2'),
-    User(online: true, email: 'test3@test.com', name: 'Jorgitin', uid: '3'),
-  ];
+  List<User> users = [];
+
+  // final users = [
+  //   User(online: true, email: 'test1@test.com', name: 'Jorge', uid: '1'),
+  //   User(online: false, email: 'test2@test.com', name: 'Yoisy', uid: '2'),
+  //   User(online: true, email: 'test3@test.com', name: 'Jorgitin', uid: '3'),
+  // ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
     // Instancia de mi provider
     final authService = Provider.of<AuthService>(context);
+    final socketService = Provider.of<SocketService>(context);
     final user = authService.user;
     return Scaffold(
         appBar: AppBar(
@@ -39,7 +50,8 @@ class _UsersPageState extends State<UsersPage> {
           // 'leading' para reservar espacio para íconos iniciales
           leading: IconButton(
             onPressed: () {
-              // TODO: Desconectar el socket server
+              // Desconectar el socket server
+              socketService.disconnect();
               Navigator.pushReplacementNamed(context, 'login');
               AuthService.deleteToken();
             },
@@ -51,14 +63,9 @@ class _UsersPageState extends State<UsersPage> {
           actions: [
             Container(
               margin: const EdgeInsets.only(right: 10),
-              child: Icon(
-                Icons.check_circle,
-                color: Colors.blue[400],
-              ),
-              /*child: const Icon(
-                Icons.offline_bolt,
-                color: Colors.red,
-              ),*/
+              child: (socketService.serverStatus == ServerStatus.Online)
+                  ? Icon(Icons.check_circle, color: Colors.blue[400])
+                  : const Icon(Icons.offline_bolt, color: Colors.red),
             )
           ],
         ),
@@ -110,7 +117,9 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
-  _loadUsers() {
+  _loadUsers() async {
+    users = await usersService.getUsers();
+    setState(() {});
     // await Future.delayed(const Duration(milliseconds: 1000));
     // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
