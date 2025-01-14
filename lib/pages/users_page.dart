@@ -74,7 +74,7 @@ class _UsersPageState extends State<UsersPage> {
         body: SmartRefresher(
           controller: _refreshController,
           enablePullDown: true,
-          onRefresh: _loadUsers(),
+          onRefresh: _loadUsers,
           header: WaterDropHeader(
             complete: Icon(
               Icons.check,
