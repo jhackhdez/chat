@@ -5,6 +5,8 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:chat/services/auth_service.dart';
 import 'package:chat/services/socket_service.dart';
 import 'package:chat/services/users_service.dart';
+import 'package:chat/services/chat_service.dart';
+
 import 'package:chat/models/user.dart';
 
 class UsersPage extends StatefulWidget {
@@ -20,12 +22,6 @@ class _UsersPageState extends State<UsersPage> {
   final usersService = UsersService();
 
   List<User> users = [];
-
-  // final users = [
-  //   User(online: true, email: 'test1@test.com', name: 'Jorge', uid: '1'),
-  //   User(online: false, email: 'test2@test.com', name: 'Yoisy', uid: '2'),
-  //   User(online: true, email: 'test3@test.com', name: 'Jorgitin', uid: '3'),
-  // ];
 
   @override
   void initState() {
@@ -114,6 +110,12 @@ class _UsersPageState extends State<UsersPage> {
             color: user.online ? Colors.green[300] : Colors.red,
             borderRadius: BorderRadius.circular(100)),
       ),
+      onTap: () {
+        final chatService = Provider.of<ChatService>(context, listen: false);
+        chatService.userFor = user;
+        // Navegamos a pantalla de mensajes del user seleccionado
+        Navigator.pushNamed(context, 'chat');
+      },
     );
   }
 

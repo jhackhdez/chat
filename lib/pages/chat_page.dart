@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:chat/widgets/chat_message.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
+import 'package:provider/provider.dart';
+import 'package:chat/services/chat_service.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -22,25 +25,29 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Se llama al servicio donde se tiene toda info del userFor
+    final chatService = Provider.of<ChatService>(context);
+    final userFor = chatService.userFor;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Column(
+        title: Column(
           children: [
             CircleAvatar(
               backgroundColor: Colors.blueAccent,
               maxRadius: 14,
               child: Text(
-                'Jo',
-                style: TextStyle(fontSize: 12, color: Colors.white),
+                userFor.name.substring(0, 2),
+                style: const TextStyle(fontSize: 12, color: Colors.white),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 3,
             ),
             Text(
-              'Yoisy Perez',
-              style: TextStyle(color: Colors.black87, fontSize: 12),
+              userFor.name,
+              style: const TextStyle(color: Colors.black87, fontSize: 12),
             )
           ],
         ),
