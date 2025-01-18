@@ -2,10 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'package:chat/widgets/chat_message.dart';
-
 import 'package:provider/provider.dart';
+
 import 'package:chat/services/chat_service.dart';
+import 'package:chat/services/socket_service.dart';
+import 'package:chat/services/auth_service.dart';
+
+import 'package:chat/widgets/chat_message.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -19,14 +22,24 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   final _textController = TextEditingController();
   final _focusNode = FocusNode();
 
+  late ChatService chatService;
+  late SocketService socketService;
+  late AuthService authService;
+
   final List<ChatMessage> _messages = [];
 
   bool _isWriting = false;
 
   @override
+  void initState() {
+    super.initState();
+    chatService = Provider.of<ChatService>(context, listen: false);
+    socketService = Provider.of<SocketService>(context, listen: false);
+    authService = Provider.of<AuthService>(context, listen: false);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Se llama al servicio donde se tiene toda info del userFor
-    final chatService = Provider.of<ChatService>(context);
     final userFor = chatService.userFor;
 
     return Scaffold(
@@ -131,15 +144,15 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     ));
   }
 
-  _handleSubmit(String texto) {
-    if (texto.isEmpty) {
+  _handleSubmit(String text) {
+    if (text.isEmpty) {
       return;
     }
     _textController.clear();
     _focusNode.requestFocus();
 
     final newMessage = ChatMessage(
-      text: texto,
+      text: text,
       uid: '123',
       // el 'this' sale disponible solo si se mezcló la clase principal con 'TickerProviderStateMixin'
       animationController: AnimationController(
@@ -151,6 +164,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
     setState(() {
       _isWriting = false;
+    });
+
+    // Acá es donde se envía mensaje al servidor de socket
+    socketService.emit('personal-msg', {
+      // Acá se define el que envía el msg, el destinatario del msg y el texto del msg
+      'from': authService.user.uid,
+      'to': chatService.userFor.uid,
+      'text': text
     });
   }
 
