@@ -36,6 +36,23 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     chatService = Provider.of<ChatService>(context, listen: false);
     socketService = Provider.of<SocketService>(context, listen: false);
     authService = Provider.of<AuthService>(context, listen: false);
+    // Escuchar mensaje que viene desde el server
+    socketService.socket.on('personal-msg', _listenMessage);
+  }
+
+  void _listenMessage(dynamic payload) {
+    ChatMessage message = ChatMessage(
+        text: payload['text'],
+        uid: payload['to'],
+        animationController: AnimationController(
+            vsync: this, duration: const Duration(milliseconds: 300)));
+
+    setState(() {
+      _messages.insert(0, message);
+    });
+
+    // Mandar a correr la animación
+    message.animationController.forward();
   }
 
   @override
@@ -177,12 +194,13 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    // TODO: Off del socket
-
     // Limpiar cada una de las instancias que tenemos en el array de msjs
     for (ChatMessage message in _messages) {
       message.animationController.dispose();
     }
+    // dejar de escuchar mensajes al salir
+    socketService.socket.off('personal-msg');
+
     super.dispose();
   }
 }
