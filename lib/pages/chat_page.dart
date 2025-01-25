@@ -8,6 +8,7 @@ import 'package:chat/services/chat_service.dart';
 import 'package:chat/services/socket_service.dart';
 import 'package:chat/services/auth_service.dart';
 
+import 'package:chat/models/messages_response.dart';
 import 'package:chat/widgets/chat_message.dart';
 
 class ChatPage extends StatefulWidget {
@@ -38,9 +39,32 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     authService = Provider.of<AuthService>(context, listen: false);
     // Escuchar mensaje que viene desde el server
     socketService.socket.on('personal-msg', _listenMessage);
+    // Cargar historial de mensajes
+    _loadHistory(chatService.userFor.uid);
+  }
+
+  Future<void> _loadHistory(String userID) async {
+    List<Message> chats = await chatService.getChat(userID);
+    final history = chats.map((message) => ChatMessage(
+          text: message.text,
+          uid: message.from,
+          // ..forward() lanza inmediatamente la animación
+          animationController: AnimationController(
+              vsync: this, duration: const Duration(milliseconds: 0))
+            ..forward(),
+        ));
+
+    // Inserta los mensajes en el array de mensajes, que serán los que se muestren al abrir el chat
+    setState(() {
+      _messages.insertAll(0, history);
+    });
   }
 
   void _listenMessage(dynamic payload) {
+    if (payload['from'] != chatService.userFor.uid &&
+        payload['from'] != authService.user.uid) {
+      return;
+    }
     ChatMessage message = ChatMessage(
         text: payload['text'],
         uid: payload['to'],
@@ -98,7 +122,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           const Divider(
             height: 5,
           ),
-          // TODO: Caja de texto para escribir los msj
+          // Caja de texto para escribir los msj
           Container(
             color: Colors.white,
             child: _inputChat(),
@@ -170,7 +194,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
     final newMessage = ChatMessage(
       text: text,
-      uid: '123',
+      uid: authService.user.uid,
       // el 'this' sale disponible solo si se mezcló la clase principal con 'TickerProviderStateMixin'
       animationController: AnimationController(
           vsync: this, duration: const Duration(milliseconds: 200)),
